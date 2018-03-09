@@ -7,49 +7,26 @@ namespace :puma do
       on roles(fetch(:puma_role)) do |role|
         git_plugin.template_puma 'run-puma', "#{fetch(:tmp_dir)}/run-puma", role
         execute "chmod +x #{fetch(:tmp_dir)}/run-puma"
-
-        if fetch(:nginx_sudo)
-          sudo "mv #{fetch(:tmp_dir)}/run-puma #{fetch(:puma_run_path)}"
-        else
-          execute "mv #{fetch(:tmp_dir)}/run-puma #{fetch(:puma_run_path)}"
-        end
+        sudo "mv #{fetch(:tmp_dir)}/run-puma #{fetch(:puma_run_path)}"
 
         if test '[ -f /etc/redhat-release ]'
           #RHEL flavor OS
           git_plugin.rhel_install(role)
           execute "chmod +x #{fetch(:tmp_dir)}/puma"
-
-          if fetch(:nginx_sudo)
-            sudo "mv #{fetch(:tmp_dir)}/puma /etc/init.d/puma"
-            sudo 'chkconfig --add puma'
-          else
-            execute "mv #{fetch(:tmp_dir)}/puma /etc/init.d/puma"
-            execute 'chkconfig --add puma'
-          end
-
+          sudo "mv #{fetch(:tmp_dir)}/puma /etc/init.d/puma"
+          sudo 'chkconfig --add puma'
         elsif test '[ -f /etc/lsb-release ]'
           #Debian flavor OS
           git_plugin.debian_install(role)
           execute "chmod +x #{fetch(:tmp_dir)}/puma"
-
-          if fetch(:nginx_sudo)
-            sudo "mv #{fetch(:tmp_dir)}/puma /etc/init.d/puma"
-            sudo 'update-rc.d -f puma defaults'
-          else
-            execute "mv #{fetch(:tmp_dir)}/puma /etc/init.d/puma"
-            execute 'update-rc.d -f puma defaults'
-          end
-
+          sudo "mv #{fetch(:tmp_dir)}/puma /etc/init.d/puma"
+          sudo 'update-rc.d -f puma defaults'
         else
           #Some other OS
           error 'This task is not supported for your OS'
         end
 
-        if fetch(:nginx_sudo)
-          sudo "touch #{fetch(:puma_jungle_conf)}"
-        else
-          execute "touch #{fetch(:puma_jungle_conf)}"
-        end
+        sudo "touch #{fetch(:puma_jungle_conf)}"
       end
     end
 
